@@ -1,4 +1,5 @@
-export const validLoginForm = ({ username, password }) => {
+export const validLoginForm = (username, password) => {
+  console.log(username)
   switch (true) {
     case !username:
       return {

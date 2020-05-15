@@ -4,10 +4,9 @@ export const StoreContext = createContext({})
 
 export const StoreContextProvider = ({ children }) => {
   const [token, setToken] = useState("")
-  console.log("token", token)
   const store = {
-    token: {
-      token,
+    auth: {
+      token: localStorage.getItem('token')|| token,
       setToken,
     },
   }
