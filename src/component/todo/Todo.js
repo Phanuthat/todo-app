@@ -22,7 +22,6 @@ export const Todo = (props) => {
   const { modalType, setModalType, showModal, setShowModal } = modal
 
   const getToken = JSON.parse(auth.token)
-  console.log("to", getToken)
   if (!getToken.token) return <Redirect to='/login' />
 
   const modalOpen = (type) => {
@@ -65,12 +64,13 @@ export const Todo = (props) => {
       if (data) {
         setTodos(data)
       }
+      console.log("props", props)
     } catch (error) {
       const { status } = error.response
 
-      if (status === 401) {
-        setStatusCode(true)
-      }
+      // if (status === 401) {
+      //   props.history.push("/login")
+      // }
     }
   }
 
