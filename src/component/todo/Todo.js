@@ -21,7 +21,8 @@ export const Todo = (props) => {
   const config = (title = "", description = "") => {
     return {
       headers: {
-        Authorization: `Bearer ${getToken}`,
+        Authorization: `Bearer ${getToken.token}`,
+        "Access-Control-Allow-Origin": "https://candidate.neversitup.com/",
       },
       data: {
         title,
@@ -37,26 +38,46 @@ export const Todo = (props) => {
   }
 
   const getTodos = async () => {
+    console.log(getToken)
+    console.log(config())
     try {
-      const res = await axios.get(`${apiEndPoint}/todos`, config)
+      const res = await axios.get(`${apiEndPoint}/todos`, config())
       const data = res.data
       if (data) {
         setTodo(data)
         console.log("red data", data)
       }
     } catch (error) {
-      console.log(error)
+      console.log("error", error)
     }
+    // axios({
+    //   url: "https://candidate.neversitup.com/todo/todos",
+    //   method: "get",
+    //   headers: {
+    //     Authorization: `Bearer ${getToken.token}`,
+    //     "Access-Control-Allow-Origin": "https://candidate.neversitup.com/",
+    //   },
+    //   // data: {
+    //   //   firstName: this.state.firstName,
+    //   //   lastName: this.state.lastName
+    //   // }
+    // })
+    //   .then((response) => {
+    //     console.log("res", response.data)
+    //   })
+    //   .catch((e) => {
+    //     console.log("error ", e.response)
+    //   })
   }
 
   const createTodo = async (title, description) => {
+    console.log(title, description)
     axios({
       url: `${apiEndPoint}/todos`,
       method: "post",
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${getToken}`,
+        Authorization: `Bearer ${getToken.token}`,
+        "Access-Control-Allow-Origin": "https://candidate.neversitup.com/",
       },
       data: {
         title,
@@ -88,16 +109,16 @@ export const Todo = (props) => {
   const onSubmit = (values, formikActions) => {
     const { title, description } = values
 
-    switch (modalType) {
-      case "edit":
-        break
-      case "add":
-        break
-      case "delete":
-        break
-      default:
-        break
-    }
+    // switch (modalType) {
+    //   case "edit":
+    //     break
+    //   case "add":
+    //     break
+    //   case "delete":
+    //     break
+    //   default:
+    //     break
+    // }
     createTodo(title, description)
   }
 
