@@ -6,10 +6,10 @@ import axios from "axios"
 import { StoreContext } from "../../context/store"
 import { validLoginForm } from "../../validForm/loginForm"
 import { InputWithErrorMessage } from "../../common"
-import { Redirect } from "react-router-dom"
+import { authLogin } from "../../api"
 export const Login = (props) => {
   const { auth } = useContext(StoreContext)
-  const [redirect, setRedirect] = useState(false)
+
   const login = async (values, actions) => {
     const { username, password } = values
     const validLogin = validLoginForm(username, password)
@@ -17,13 +17,10 @@ export const Login = (props) => {
       actions.setErrors(validLogin)
     }
     try {
-      const res = await axios.post(
-        `https://candidate.neversitup.com/todo/users/auth`,
-        {
-          username,
-          password,
-        },
-      )
+      const res = await authLogin({
+        username,
+        password,
+      })
       const data = res.data
       if (data) {
         auth.setToken(localStorage.setItem("token", JSON.stringify(data)))

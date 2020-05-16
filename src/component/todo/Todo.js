@@ -187,8 +187,9 @@ export const Todo = (props) => {
             + Create
           </Button>
         </div>
-        {todos.map((todo) => (
+        {todos.map((todo, index) => (
           <Card
+            key={index}
             todo={todo}
             onClickEdit={onClickEdit}
             onClickDelete={onClickDelete}

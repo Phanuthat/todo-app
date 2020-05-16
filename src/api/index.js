@@ -18,3 +18,7 @@ export const update = (id, data) => {
 export const remove = (id, data) => {
   return axios.delete(`/todos/${id}`, data)
 }
+
+export const authLogin = (data) => {
+  return axios.post("/users/auth", data)
+}
