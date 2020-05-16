@@ -2,138 +2,163 @@ import React, { useContext, useState, useEffect } from "react"
 import { Redirect } from "react-router-dom"
 import { StoreContext } from "../../context/store"
 import { Button, Space, Modal as Modalantd } from "antd"
-import { Card, StyleWapper } from "./Style"
+import { StyleCardWapper, StyleWapper } from "./Style"
 import { Formik } from "formik"
-import axios from "axios"
 import { InputWithErrorMessage } from "../../common"
+import { getAll, create, remove, update } from "../../api"
+import { validModalForm } from "../../validForm/loginForm"
 export const Todo = (props) => {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalType, setModalType] = useState("")
-  const [todos, setTodo] = useState([])
+  console.log(props)
+  const [todos, setTodos] = useState([])
+  const [todo, setTodo] = useState({ title: "", description: "", id: "" })
+  const [statusCode, setStatusCode] = useState(false)
 
   useEffect(() => {
     getTodos()
+    return setStatusCode(false)
   }, [])
-  const { auth } = useContext(StoreContext)
+
+  const { auth, modal } = useContext(StoreContext)
+  const { modalType, setModalType, showModal, setShowModal } = modal
+
   const getToken = JSON.parse(auth.token)
+  console.log("to", getToken)
   if (!getToken.token) return <Redirect to='/login' />
 
-  const config = (title = "", description = "") => {
-    return {
-      headers: {
-        Authorization: `Bearer ${getToken.token}`,
-        "Access-Control-Allow-Origin": "https://candidate.neversitup.com/",
-      },
-      data: {
-        title,
-        description,
-      },
-    }
-  }
-  const apiEndPoint = "https://candidate.neversitup.com/todo"
-
-  const showModal = (type) => {
-    setModalOpen(!modalOpen)
+  const modalOpen = (type) => {
+    setShowModal(true)
     setModalType(type)
   }
 
-  const getTodos = async () => {
-    console.log(getToken)
-    console.log(config())
-    try {
-      const res = await axios.get(`${apiEndPoint}/todos`, config())
-      const data = res.data
-      if (data) {
-        setTodo(data)
-        console.log("red data", data)
-      }
-    } catch (error) {
-      console.log("error", error)
-    }
-    // axios({
-    //   url: "https://candidate.neversitup.com/todo/todos",
-    //   method: "get",
-    //   headers: {
-    //     Authorization: `Bearer ${getToken.token}`,
-    //     "Access-Control-Allow-Origin": "https://candidate.neversitup.com/",
-    //   },
-    //   // data: {
-    //   //   firstName: this.state.firstName,
-    //   //   lastName: this.state.lastName
-    //   // }
-    // })
-    //   .then((response) => {
-    //     console.log("res", response.data)
-    //   })
-    //   .catch((e) => {
-    //     console.log("error ", e.response)
-    //   })
+  const modalClose = () => {
+    setShowModal(false)
+    setModalType("")
+    clearTodoState()
   }
 
-  const createTodo = async (title, description) => {
-    console.log(title, description)
-    axios({
-      url: `${apiEndPoint}/todos`,
-      method: "post",
-      headers: {
-        Authorization: `Bearer ${getToken.token}`,
-        "Access-Control-Allow-Origin": "https://candidate.neversitup.com/",
-      },
-      data: {
-        title,
-        description,
+  const onClickEdit = (values) => {
+    modalOpen("update")
+    setTodo(values)
+  }
+
+  const onClickDelete = (values) => {
+    const { confirm } = Modalantd
+    confirm({
+      title: "Are you sure delete Todo?",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        deleteTodo(values)
       },
     })
-      .then((res) => {
-        console.log("Res edit page ===================>", res.data)
-        // this.props.location.push("/profile")
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+  }
 
-    // try {
-    //   const res = await axios.post(
-    //     `${apiEndPoint}/todos/`,
-    //     config(title, description),
-    //   )
-    //   const data = res.data
-    //   if (data) {
-    //     console.log(data)
-    //   }
-    // } catch (error) {
-    //   console.log(error)
-    // }
+  const clearTodoState = () => {
+    setTodo({ title: "", description: "", id: "" })
+  }
+
+  const getTodos = async () => {
+    try {
+      const res = await getAll()
+      const data = res.data
+      if (data) {
+        setTodos(data)
+      }
+    } catch (error) {
+      const { status } = error.response
+
+      if (status === 401) {
+        setStatusCode(true)
+      }
+    }
+  }
+
+  const createTodo = async (values, formikActions) => {
+    const { title, description } = values
+    const validValueModal = validModalForm(title, description)
+
+    if (validValueModal) {
+      formikActions.setErrors(validValueModal)
+      return
+    }
+    try {
+      const data = {
+        title,
+        description,
+      }
+
+      const res = await create(data)
+      if (res.status === 200) {
+        modalClose()
+        getTodos()
+        modalClose()
+      }
+    } catch (error) {
+      console.log(error.response)
+    }
+  }
+
+  const updateTodo = async (values, formikActions) => {
+    const { title, description } = values
+    const validValueModal = validModalForm(title, description)
+
+    if (validValueModal) {
+      formikActions.setErrors(validValueModal)
+      return
+    }
+    const data = {
+      title: values.title,
+      description: values.description,
+    }
+    try {
+      const res = await update(values._id, data)
+      if (res.status === 200) {
+        modalClose()
+        getTodos()
+        modalClose()
+      }
+    } catch (error) {
+      console.log(error.response)
+    }
+  }
+
+  const deleteTodo = async (values) => {
+    try {
+      const res = await remove(values._id)
+      if (res.status === 200) {
+        getTodos()
+      }
+    } catch (error) {
+      console.log(error.response)
+    }
   }
 
   const onSubmit = (values, formikActions) => {
-    const { title, description } = values
-
-    // switch (modalType) {
-    //   case "edit":
-    //     break
-    //   case "add":
-    //     break
-    //   case "delete":
-    //     break
-    //   default:
-    //     break
-    // }
-    createTodo(title, description)
+    switch (modalType) {
+      case "update":
+        updateTodo(values, formikActions)
+        break
+      case "create":
+        createTodo(values, formikActions)
+        break
+      default:
+        break
+    }
   }
 
   const Modal = () => (
     <Formik
-      initialValues={{ title: "", description: "" }}
+      enableReinitialize
+      initialValues={todo}
       onSubmit={(values, actions) => onSubmit(values, actions)}
     >
       {({ values, errors, handleSubmit, handleChange }) => (
         <Modalantd
           title={modalType}
-          visible={modalOpen}
+          visible={showModal}
           onOk={handleSubmit}
-          //   confirmLoading={confirmLoading}
-          onCancel={showModal}
+          onCancel={modalClose}
           okText='Submit'
         >
           <div>
@@ -141,52 +166,55 @@ export const Todo = (props) => {
               onChange={handleChange("title")}
               placeholder='Title'
               value={values.title}
+              isErrorStatus={!!errors.title}
+              errorMessage={errors.title}
             />
             <InputWithErrorMessage
               onChange={handleChange("description")}
               placeholder='Description'
               value={values.description}
+              isErrorStatus={!!errors.description}
+              errorMessage={errors.description}
             />
           </div>
         </Modalantd>
       )}
     </Formik>
   )
-  console.log(todos)
+
   return (
     <StyleWapper>
-      <Space direction='vertical'>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <Button type='primary' onClick={() => showModal("create")}>
+      <Space direction='vertical' className='space-card'>
+        <div className='button-center'>
+          <Button type='primary' onClick={() => modalOpen("create")}>
             + Create
           </Button>
         </div>
-        <Card>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <a onClick={() => showModal("edit")}>edit</a>
-            <a onClick={() => showModal("delete")}>delete</a>
-          </div>
-          <h3>Title</h3>
-          <p>test</p>
-        </Card>
-        <Card>
-          <h3>Title</h3>
-          <p>test</p>
-        </Card>
-        <Card>
-          <h3>Title</h3>
-          <p>test</p>
-        </Card>
-        <Card>
-          <h3>Title</h3>
-          <p>test</p>
-        </Card>
-        <Card>
-          <h3>Title</h3>
-          <p>test</p>
-        </Card>
+        {todos.map((todo) => (
+          <Card
+            todo={todo}
+            onClickEdit={onClickEdit}
+            onClickDelete={onClickDelete}
+          />
+        ))}
       </Space>
       <Modal />
     </StyleWapper>
   )
 }
+const Card = ({
+  onClickEdit = () => {},
+  onClickDelete = () => {},
+  todo = {},
+}) => (
+  <StyleCardWapper>
+    <div className='position-end'>
+      <Space>
+        <a onClick={() => onClickEdit(todo)}>edit</a>
+        <a onClick={() => onClickDelete(todo)}>delete</a>
+      </Space>
+    </div>
+    <h3>{todo?.title}</h3>
+    <p>{todo?.description}</p>
+  </StyleCardWapper>
+)

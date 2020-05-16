@@ -3,6 +3,8 @@ import { colors } from "../../colors"
 export const Column = styled.div`
   display: flex;
   flex-direction: column;
+  margin-top: 5px;
+  margin-bottom: 5px;
 `
 export const Input = styled.input`
   width: 100%;

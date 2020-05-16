@@ -4,10 +4,19 @@ export const StoreContext = createContext({})
 
 export const StoreContextProvider = ({ children }) => {
   const [token, setToken] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [modalType, setModalType] = useState("")
+
   const store = {
     auth: {
-      token: localStorage.getItem('token')|| token,
+      token: localStorage.getItem("token") || token,
       setToken,
+    },
+    modal: {
+      showModal,
+      setShowModal,
+      modalType,
+      setModalType,
     },
   }
 

@@ -1,5 +1,4 @@
 export const validLoginForm = (username, password) => {
-  console.log(username)
   switch (true) {
     case !username:
       return {
@@ -11,5 +10,22 @@ export const validLoginForm = (username, password) => {
         isError: true,
         password: "Please input password",
       }
+  }
+}
+
+export const validModalForm = (title, description) => {
+  switch (true) {
+    case !title:
+      return {
+        isError: true,
+        title: "Please input title",
+      }
+    case !description:
+      return {
+        isError: true,
+        description: "Please input description",
+      }
+    default:
+      break
   }
 }
