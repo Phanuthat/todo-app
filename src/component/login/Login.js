@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { useContext, useState } from "react"
 import { StyleWapper } from "./Style"
 import { notification, Button } from "antd"
 import { Formik } from "formik"
@@ -6,9 +6,10 @@ import axios from "axios"
 import { StoreContext } from "../../context/store"
 import { validLoginForm } from "../../validForm/loginForm"
 import { InputWithErrorMessage } from "../../common"
+import { Redirect } from "react-router-dom"
 export const Login = (props) => {
   const { auth } = useContext(StoreContext)
-
+  const [redirect, setRedirect] = useState(false)
   const login = async (values, actions) => {
     const { username, password } = values
     const validLogin = validLoginForm(username, password)
@@ -26,6 +27,7 @@ export const Login = (props) => {
       const data = res.data
       if (data) {
         auth.setToken(localStorage.setItem("token", JSON.stringify(data)))
+        axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`
         props.history.push("/todo")
       }
     } catch (error) {

@@ -8,20 +8,20 @@ import { InputWithErrorMessage } from "../../common"
 import { getAll, create, remove, update } from "../../api"
 import { validModalForm } from "../../validForm/loginForm"
 export const Todo = (props) => {
-  console.log(props)
   const [todos, setTodos] = useState([])
   const [todo, setTodo] = useState({ title: "", description: "", id: "" })
-  const [statusCode, setStatusCode] = useState(false)
+  const [redirect, setRedirect] = useState(false)
 
   useEffect(() => {
     getTodos()
-  }, [])
+  }, [!todos])
 
-  const { auth, modal } = useContext(StoreContext)
+  const { modal } = useContext(StoreContext)
   const { modalType, setModalType, showModal, setShowModal } = modal
 
-  const getToken = JSON.parse(auth.token)
-  if (!getToken.token) return <Redirect to='/login' />
+  function redirectTo(path) {
+    return <Redirect to={path} />
+  }
 
   const modalOpen = (type) => {
     setShowModal(true)
@@ -63,12 +63,10 @@ export const Todo = (props) => {
       if (data) {
         setTodos(data)
       }
-      console.log("props", props)
     } catch (error) {
       const { status } = error.response
-
       if (status === 401) {
-        return <Redirect to='/login' />
+        setRedirect(true)
       }
     }
   }
@@ -180,7 +178,7 @@ export const Todo = (props) => {
       )}
     </Formik>
   )
-
+  if (redirect) return redirectTo("/login")
   return (
     <StyleWapper>
       <Space direction='vertical' className='space-card'>

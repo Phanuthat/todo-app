@@ -1,12 +1,4 @@
-import React, { useContext } from "react"
 import axios from "axios"
-import { StoreContext } from "../context/store"
-
-const getToken = localStorage.getItem("token") || ""
-if (getToken) {
-  const token = JSON.parse(getToken)
-  axios.defaults.headers.common["Authorization"] = token.token
-}
 
 const apiEndPoint = "https://candidate.neversitup.com/todo"
 axios.defaults.baseURL = apiEndPoint
