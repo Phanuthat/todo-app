@@ -15,7 +15,6 @@ export const Todo = (props) => {
 
   useEffect(() => {
     getTodos()
-    return setStatusCode(false)
   }, [])
 
   const { auth, modal } = useContext(StoreContext)
@@ -68,9 +67,9 @@ export const Todo = (props) => {
     } catch (error) {
       const { status } = error.response
 
-      // if (status === 401) {
-      //   props.history.push("/login")
-      // }
+      if (status === 401) {
+        return <Redirect to='/login' />
+      }
     }
   }
 
@@ -202,6 +201,7 @@ export const Todo = (props) => {
     </StyleWapper>
   )
 }
+
 const Card = ({
   onClickEdit = () => {},
   onClickDelete = () => {},
